@@ -5,17 +5,16 @@ import ChatPanel from "./ChatPanel.jsx";
 export default function App() {
   const [excalidrawAPI, setExcalidrawAPI] = useState(null);
   const [chatCollapsed, setChatCollapsed] = useState(false);
+  const [pushMessage, setPushMessage] = useState(null);
 
-  const handleSceneGenerated = useCallback(
+  const loadScene = useCallback(
     (sceneData) => {
       if (!excalidrawAPI) return;
 
-      // Update the Excalidraw canvas with the generated scene
       excalidrawAPI.updateScene({
         elements: sceneData.elements,
       });
 
-      // Add files if present (images)
       if (sceneData.files && Object.keys(sceneData.files).length > 0) {
         excalidrawAPI.addFiles(
           Object.values(sceneData.files).map((f) => ({
@@ -28,7 +27,6 @@ export default function App() {
         );
       }
 
-      // Zoom to fit the content
       setTimeout(() => {
         excalidrawAPI.scrollToContent(excalidrawAPI.getSceneElements(), {
           fitToContent: true,
@@ -38,6 +36,24 @@ export default function App() {
     },
     [excalidrawAPI]
   );
+
+  // SSE: listen for scenes pushed from Claude Code
+  useEffect(() => {
+    if (!excalidrawAPI) return;
+
+    const evtSource = new EventSource("/api/events");
+    evtSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === "scene" && data.scene) {
+          loadScene(data.scene);
+          setPushMessage(data.message || "Updated from Claude Code");
+          setTimeout(() => setPushMessage(null), 4000);
+        }
+      } catch {}
+    };
+    return () => evtSource.close();
+  }, [excalidrawAPI, loadScene]);
 
   return (
     <div style={styles.container}>
@@ -59,7 +75,7 @@ export default function App() {
           </button>
         ) : (
           <ChatPanel
-            onSceneGenerated={handleSceneGenerated}
+            onSceneGenerated={loadScene}
             onCollapse={() => setChatCollapsed(true)}
           />
         )}
@@ -67,6 +83,9 @@ export default function App() {
 
       {/* Excalidraw canvas */}
       <div style={styles.canvasSide}>
+        {pushMessage && (
+          <div style={styles.toast}>{pushMessage}</div>
+        )}
         <Excalidraw
           ref={(api) => {
             if (api && !excalidrawAPI) setExcalidrawAPI(api);
@@ -113,5 +132,19 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     borderBottom: "1px solid #e5e7eb",
+  },
+  toast: {
+    position: "absolute",
+    top: 12,
+    left: "50%",
+    transform: "translateX(-50%)",
+    background: "#1B2A4A",
+    color: "white",
+    padding: "8px 20px",
+    borderRadius: 8,
+    fontSize: 13,
+    zIndex: 1000,
+    boxShadow: "0 2px 12px rgba(0,0,0,0.15)",
+    animation: "fadeIn 0.3s ease",
   },
 };
