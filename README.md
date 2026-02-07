@@ -1,16 +1,56 @@
 # Excalidraw Hotel Visualizer
 
-Generate presentation-ready `.excalidraw` files for YouTube videos about AI-automated hotel front desk systems.
-
-## What it does
-
-- Generates clean, modern Excalidraw visualizations with hotel industry data
-- Creates bar charts, stat cards, timelines, comparison tables, and feature grids
-- Adds **light grey script lines** (jokes & talking points) as subtle presenter notes
-- Includes **image placeholders** where you drag & drop relevant photos
-- Outputs valid `.excalidraw` files you open directly at [excalidraw.com](https://excalidraw.com)
+A chat-based tool that generates hotel AI front desk visualizations directly inside an Excalidraw canvas. Type what you want, see it instantly — no files to manage, no copy-pasting.
 
 ## Quick start
+
+```bash
+npm install
+npm run dev
+```
+
+Open `http://localhost:5173` — you'll see a chat panel on the left and the Excalidraw canvas on the right.
+
+Type something like:
+- "Show me ROI analysis for a 50-room hotel"
+- "Guest journey comparison: traditional vs AI check-in"
+- "Before and after AI front desk"
+- "Time savings chart"
+- "Feature comparison grid"
+- "Revenue impact of AI front desk"
+
+Or click one of the quick-start buttons.
+
+The visualization appears instantly on the canvas. Script lines (light grey jokes and talking points) are included for your recording.
+
+## How it works
+
+```
+You type a prompt  →  Server interprets it  →  Generates Excalidraw JSON  →  Canvas updates
+     (chat)            (keyword matching)        (element templates)         (auto zoom-to-fit)
+```
+
+- **Frontend**: React + Excalidraw component (Vite dev server, port 5173)
+- **Backend**: Express API (port 3200, proxied through Vite)
+- **No external AI API needed** — prompt interpretation is built-in keyword matching with smart defaults
+
+## What's on the canvas
+
+- **Stat cards** — big numbers with labels (time saved, cost savings, etc.)
+- **Bar charts** — vertical bars with value labels
+- **Comparison charts** — side-by-side before/after bars
+- **Timelines** — horizontal process flows with numbered steps
+- **Comparison tables** — two-column side-by-side layout
+- **Feature grids** — check/cross capability tables
+- **Title slides** — dark hero backgrounds with centered text
+- **Image placeholders** — dashed boxes you can drag real photos onto
+- **Script lines** — light grey text with jokes and talking points
+
+Everything is editable directly in Excalidraw after generation.
+
+## CLI mode (generate .excalidraw files)
+
+If you prefer file-based output:
 
 ```bash
 # Generate all preset templates
@@ -20,110 +60,49 @@ node src/cli.js --template all
 node src/cli.js --template roi
 node src/cli.js --template journey
 node src/cli.js --template before-after
-
-# Custom output directory
-node src/cli.js --template all --output ./my-slides
-
-# List available templates
-node src/cli.js --list
 ```
 
-Then open any `.excalidraw` file at [excalidraw.com](https://excalidraw.com) (File → Open).
+Open the output `.excalidraw` files at [excalidraw.com](https://excalidraw.com).
 
-## Preset templates
+## Project structure
 
-| Template | Description |
-|---|---|
-| `roi` | ROI & cost savings — key metrics, cost breakdown charts, time savings |
-| `journey` | Guest journey — traditional vs AI check-in flow, feature comparison grid |
-| `before-after` | Before/After — side-by-side daily operations, revenue impact stats |
-
-## Build custom sheets
-
-Use the API to create your own visualizations:
-
-```javascript
-import { Scene, titleSlide, statRow, barChart, scriptBlock, PALETTE, slideY } from "./src/index.js";
-
-const scene = new Scene();
-
-// Title slide
-scene.add(titleSlide({ title: "Your Video Title", subtitle: "Your subtitle" }));
-
-// Stats section
-scene.add(...statRow({
-  y: slideY(1) + 70,
-  stats: [
-    { value: "85%", label: "Time Saved", color: PALETTE.teal },
-    { value: "€50K", label: "Annual Savings", color: PALETTE.blue },
-  ],
-}));
-
-// Add a joke line (light grey, subtle)
-scene.add(...scriptBlock({
-  lines: [{ text: "Your joke or talking point here", type: "joke" }],
-  x: 60, y: slideY(1) + 300,
-}));
-
-// Save
-import { writeFile } from "fs/promises";
-await writeFile("my-sheet.excalidraw", scene.toString());
 ```
-
-See `examples/custom-sheet.js` for a full working example.
-
-## Available components
-
-| Component | Import | Purpose |
-|---|---|---|
-| `titleSlide` | `templates/titleSlide` | Hero title with dark background |
-| `sectionHeader` | `templates/titleSlide` | Section divider with accent line |
-| `statCard` / `statRow` | `templates/statCard` | Big number KPI cards |
-| `barChart` | `templates/barChart` | Vertical bar charts |
-| `comparisonBars` | `templates/barChart` | Side-by-side bar comparison |
-| `timeline` | `templates/timeline` | Horizontal process flow |
-| `verticalTimeline` | `templates/timeline` | Vertical step-by-step |
-| `comparison` | `templates/comparison` | Two-column comparison |
-| `featureGrid` | `templates/comparison` | Check/cross feature table |
-| `scriptLine` / `scriptBlock` | `templates/scriptLine` | Light grey presenter notes |
-| `imagePlaceholder` | `templates/imagePanel` | Dashed box for dropping images |
-| `imagePanel` | `templates/imagePanel` | Embedded image with caption |
-
-## How to use in your workflow
-
-1. **Generate** a preset or custom sheet
-2. **Open** the `.excalidraw` file at excalidraw.com
-3. **Replace** image placeholders by dragging photos onto them
-4. **Edit** any numbers or text directly — it's all editable
-5. **Read** the light grey script lines while recording (or ignore them)
-6. **Present** by scrolling through the canvas during your video
-
-## Adding real images
-
-To embed images directly in the file (instead of placeholders):
-
-```javascript
-import { Scene, image, imagePanel } from "./src/index.js";
-
-const scene = new Scene();
-const fileId = await scene.addImageFile("./photos/hotel-lobby.jpg");
-scene.add(...imagePanel({ fileId, x: 100, y: 100, caption: "Our lobby" }));
+├── web/                  # Frontend (React + Excalidraw)
+│   ├── App.jsx           # Split-panel layout
+│   ├── ChatPanel.jsx     # Chat interface with quick prompts
+│   └── main.jsx          # Entry point
+├── server/               # Backend API
+│   ├── index.js          # Express server
+│   └── interpreter.js    # Prompt → visualization mapper
+├── src/
+│   ├── core/             # Excalidraw element primitives
+│   │   ├── elements.js   # rectangle, text, arrow, line, ellipse, image
+│   │   ├── scene.js      # Scene builder with image embedding
+│   │   ├── colors.js     # Modern color palette
+│   │   └── layout.js     # Grid, row, column helpers
+│   ├── templates/        # Visualization components
+│   │   ├── barChart.js   # Bar charts + comparison bars
+│   │   ├── statCard.js   # KPI stat cards
+│   │   ├── timeline.js   # Process flows
+│   │   ├── comparison.js # Side-by-side + feature grid
+│   │   ├── titleSlide.js # Hero titles + section headers
+│   │   ├── scriptLine.js # Light grey script/joke lines
+│   │   └── imagePanel.js # Image panels + placeholders
+│   ├── presets/          # Ready-to-use hotel sheets
+│   │   └── hotelSheets.js
+│   ├── index.js          # Public API
+│   └── cli.js            # CLI interface
+└── examples/
+    └── custom-sheet.js   # Programmatic API example
 ```
 
 ## Script lines & jokes
 
-The light grey text lines are pre-written talking points and jokes. They show up very subtly in Excalidraw — visible enough to read while recording, but not distracting in the presentation.
+Light grey text appears on the canvas with talking points and jokes. Categories:
+- `checkin` — check-in process humor
+- `costs` — cost/budget jokes
+- `timeSaving` — time efficiency quips
+- `guestExperience` — guest satisfaction humor
+- `general` — hotel industry observations
 
-Categories: `checkin`, `costs`, `timeSaving`, `guestExperience`, `general`
-
-```javascript
-import { randomJoke, scriptBlock } from "./src/index.js";
-
-scene.add(...scriptBlock({
-  lines: [
-    { text: randomJoke("costs"), type: "joke" },
-    { text: "Transition to the next topic...", type: "transition" },
-  ],
-  x: 60, y: 500,
-}));
-```
+These are visible enough to read while recording but subtle enough not to distract viewers.
