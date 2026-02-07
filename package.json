@@ -1,0 +1,17 @@
+{
+  "name": "excalidraw-hotel-visualizer",
+  "version": "1.0.0",
+  "description": "Generate Excalidraw visualizations for hotel AI front desk system YouTube content",
+  "main": "src/index.js",
+  "bin": {
+    "hotel-viz": "./src/cli.js"
+  },
+  "scripts": {
+    "generate": "node src/cli.js",
+    "example": "node src/cli.js --template all --output examples/"
+  },
+  "keywords": ["excalidraw", "hotel", "ai", "visualization", "front-desk"],
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {}
+}
