@@ -3,44 +3,65 @@ import { Excalidraw } from "@excalidraw/excalidraw";
 import ChatPanel from "./ChatPanel.jsx";
 
 export default function App() {
-  const [excalidrawAPI, setExcalidrawAPI] = useState(null);
+  const excalidrawAPIRef = useRef(null);
+  const [apiReady, setApiReady] = useState(false);
   const [chatCollapsed, setChatCollapsed] = useState(false);
   const [pushMessage, setPushMessage] = useState(null);
+  const pendingScene = useRef(null);
 
   const loadScene = useCallback(
     (sceneData) => {
-      if (!excalidrawAPI) return;
-
-      excalidrawAPI.updateScene({
-        elements: sceneData.elements,
-      });
-
-      if (sceneData.files && Object.keys(sceneData.files).length > 0) {
-        excalidrawAPI.addFiles(
-          Object.values(sceneData.files).map((f) => ({
-            id: f.id,
-            dataURL: f.dataURL,
-            mimeType: f.mimeType,
-            created: f.created,
-            lastRetrieved: f.lastRetrieved,
-          }))
-        );
+      const api = excalidrawAPIRef.current;
+      if (!api) {
+        // Queue it — will load when API becomes ready
+        pendingScene.current = sceneData;
+        return;
       }
 
-      setTimeout(() => {
-        excalidrawAPI.scrollToContent(excalidrawAPI.getSceneElements(), {
-          fitToContent: true,
-          viewportZoomFactor: 0.9,
+      try {
+        api.updateScene({
+          elements: sceneData.elements,
         });
-      }, 100);
+
+        if (sceneData.files && Object.keys(sceneData.files).length > 0) {
+          api.addFiles(
+            Object.values(sceneData.files).map((f) => ({
+              id: f.id,
+              dataURL: f.dataURL,
+              mimeType: f.mimeType,
+              created: f.created,
+              lastRetrieved: f.lastRetrieved,
+            }))
+          );
+        }
+
+        setTimeout(() => {
+          try {
+            api.scrollToContent(api.getSceneElements(), {
+              fitToContent: true,
+              viewportZoomFactor: 0.9,
+            });
+          } catch (e) {
+            console.warn("scrollToContent failed:", e);
+          }
+        }, 200);
+      } catch (err) {
+        console.error("loadScene error:", err);
+      }
     },
-    [excalidrawAPI]
+    []
   );
+
+  // When the API becomes ready, load any pending scene
+  useEffect(() => {
+    if (apiReady && pendingScene.current) {
+      loadScene(pendingScene.current);
+      pendingScene.current = null;
+    }
+  }, [apiReady, loadScene]);
 
   // SSE: listen for scenes pushed from Claude Code
   useEffect(() => {
-    if (!excalidrawAPI) return;
-
     const evtSource = new EventSource("/api/events");
     evtSource.onmessage = (event) => {
       try {
@@ -50,10 +71,15 @@ export default function App() {
           setPushMessage(data.message || "Updated from Claude Code");
           setTimeout(() => setPushMessage(null), 4000);
         }
-      } catch {}
+      } catch (e) {
+        console.warn("SSE parse error:", e);
+      }
+    };
+    evtSource.onerror = () => {
+      console.warn("SSE connection error — will auto-retry");
     };
     return () => evtSource.close();
-  }, [excalidrawAPI, loadScene]);
+  }, [loadScene]);
 
   return (
     <div style={styles.container}>
@@ -87,8 +113,9 @@ export default function App() {
           <div style={styles.toast}>{pushMessage}</div>
         )}
         <Excalidraw
-          ref={(api) => {
-            if (api && !excalidrawAPI) setExcalidrawAPI(api);
+          excalidrawAPI={(api) => {
+            excalidrawAPIRef.current = api;
+            setApiReady(true);
           }}
           theme="light"
           initialData={{
@@ -145,6 +172,5 @@ const styles = {
     fontSize: 13,
     zIndex: 1000,
     boxShadow: "0 2px 12px rgba(0,0,0,0.15)",
-    animation: "fadeIn 0.3s ease",
   },
 };
