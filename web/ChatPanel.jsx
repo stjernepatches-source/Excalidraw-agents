@@ -1,19 +1,19 @@
 import React, { useState, useRef, useEffect } from "react";
 
 const QUICK_PROMPTS = [
-  { label: "ROI & Cost Savings", prompt: "Show me an ROI analysis with cost savings for a 50-room hotel switching to AI front desk" },
-  { label: "Guest Journey", prompt: "Create a guest journey comparison: traditional check-in vs AI-powered check-in flow" },
-  { label: "Before vs After", prompt: "Build a before and after comparison of daily hotel operations with and without AI" },
-  { label: "Time Savings Chart", prompt: "Bar chart showing time per guest interaction: check-in, check-out, room info — traditional vs AI" },
-  { label: "Feature Comparison", prompt: "Feature comparison grid: what traditional front desk has vs what AI front desk offers" },
-  { label: "Revenue Impact", prompt: "Show revenue impact stats: upsell increase, cost reduction, review improvement from AI front desk" },
+  { label: "Before vs After", prompt: "Create a before and after comparison showing the difference between two approaches — pick a topic relevant to YouTube creators" },
+  { label: "Step-by-step process", prompt: "Show a step-by-step process flow for how to create and publish a YouTube video from idea to upload" },
+  { label: "Stats dashboard", prompt: "Create a stats dashboard with key YouTube channel metrics: views, watch time, subscribers, revenue" },
+  { label: "Feature comparison", prompt: "Compare two options side by side — for example free vs paid video editing software" },
+  { label: "Timeline", prompt: "Show a timeline of milestones for growing a YouTube channel from 0 to 100k subscribers" },
+  { label: "Bar chart", prompt: "Bar chart comparing video performance by format: shorts, long-form, tutorials, vlogs" },
 ];
 
 export default function ChatPanel({ onSceneGenerated, onCollapse }) {
   const [messages, setMessages] = useState([
     {
       role: "assistant",
-      text: "Hey! Describe what you want to visualize about hotel AI front desk systems, and I'll generate it on the canvas.\n\nOr pick a quick start below.",
+      text: "Hey! Describe whatever you want to visualize — a process, comparison, stats, timeline, before/after — and I'll draw it on the canvas to the right.\n\nOr pick a quick start below.",
     },
   ]);
   const [input, setInput] = useState("");
@@ -74,8 +74,8 @@ export default function ChatPanel({ onSceneGenerated, onCollapse }) {
       {/* Header */}
       <div style={styles.header}>
         <div>
-          <div style={styles.title}>Hotel Visualizer</div>
-          <div style={styles.subtitle}>Excalidraw AI Sheets</div>
+          <div style={styles.title}>Excalidraw AI Generator</div>
+          <div style={styles.subtitle}>Describe it → it appears on the canvas</div>
         </div>
         <button style={styles.collapseBtn} onClick={onCollapse} title="Collapse">
           ×

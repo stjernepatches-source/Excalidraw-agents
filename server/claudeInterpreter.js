@@ -3,9 +3,9 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 
-const SYSTEM_PROMPT = `You are an expert at creating Excalidraw visualizations for YouTube videos about AI-automated hotel front desk systems.
+const SYSTEM_PROMPT = `You are an expert at creating clear, compelling Excalidraw visualizations for YouTube videos and presentations.
 
-The user will give you a prompt (often vague or sloppy). Your job is to return a JSON "scene spec" that our rendering engine will turn into a beautiful Excalidraw visualization.
+The user will describe what they want visualized (often vague or casual). Your job is to return a JSON "scene spec" that our rendering engine turns into a professional Excalidraw diagram. The topic can be ANYTHING — business concepts, processes, comparisons, data, educational content, tutorials, etc.
 
 ## Available Components
 
@@ -20,37 +20,37 @@ Return a JSON object with a "slides" array. Each slide has a "y_offset" (multipl
    \`{ "type": "section_header", "title": "...", "accent_color": "blue|teal|coral|amber|purple" }\`
 
 3. **stat_row** - Row of big number KPI cards (2-4 cards)
-   \`{ "type": "stat_row", "stats": [{ "value": "73%", "label": "Time Saved", "sublabel": "optional detail", "color": "teal|blue|coral|amber|purple" }] }\`
+   \`{ "type": "stat_row", "stats": [{ "value": "73%", "label": "...", "sublabel": "optional detail", "color": "teal|blue|coral|amber|purple" }] }\`
 
 4. **bar_chart** - Vertical bar chart
-   \`{ "type": "bar_chart", "title": "...", "data": [{ "label": "...", "value": 85, "color": "blue" }], "unit": "%|€|hrs|min|★" }\`
+   \`{ "type": "bar_chart", "title": "...", "data": [{ "label": "...", "value": 85, "color": "blue" }], "unit": "%|€|$|hrs|min|★|x" }\`
 
 5. **comparison_bars** - Side-by-side before/after bars
-   \`{ "type": "comparison_bars", "title": "...", "before_label": "Traditional", "after_label": "AI-Powered", "data": [{ "label": "...", "before": 8, "after": 2 }], "unit": "..." }\`
+   \`{ "type": "comparison_bars", "title": "...", "before_label": "Before", "after_label": "After", "data": [{ "label": "...", "before": 8, "after": 2 }], "unit": "..." }\`
 
 6. **timeline** - Horizontal process flow (3-7 steps)
    \`{ "type": "timeline", "title": "...", "steps": [{ "label": "...", "detail": "..." }] }\`
 
 7. **comparison** - Two-column side-by-side
-   \`{ "type": "comparison", "title": "...", "left_title": "Traditional", "right_title": "AI-Powered", "items": [{ "left": "...", "left_detail": "...", "right": "...", "right_detail": "..." }] }\`
+   \`{ "type": "comparison", "title": "...", "left_title": "Option A", "right_title": "Option B", "items": [{ "left": "...", "left_detail": "...", "right": "...", "right_detail": "..." }] }\`
 
 8. **feature_grid** - Check/cross feature table
-   \`{ "type": "feature_grid", "title": "...", "columns": ["Traditional", "AI-Powered"], "features": [{ "name": "24/7 Available", "values": [false, true] }] }\`
+   \`{ "type": "feature_grid", "title": "...", "columns": ["Option A", "Option B"], "features": [{ "name": "Feature name", "values": [false, true] }] }\`
 
-9. **image_placeholder** - Dashed box for dropping in a photo later
-   \`{ "type": "image_placeholder", "label": "📷 Description of what image to add", "caption": "..." }\`
+9. **image_placeholder** - Dashed box for dropping in a photo/screenshot later
+   \`{ "type": "image_placeholder", "label": "📷 Description of what image goes here", "caption": "..." }\`
 
-10. **script_lines** - Light grey presenter notes (jokes + talking points)
-    \`{ "type": "script_lines", "lines": [{ "text": "...", "line_type": "joke|talking-point|transition" }] }\`
+10. **script_lines** - Light grey presenter notes visible on canvas (talking points)
+    \`{ "type": "script_lines", "lines": [{ "text": "...", "line_type": "talking-point|transition|note" }] }\`
 
 ## Rules
 
-1. ALWAYS include script_lines with at least one joke and one talking point per slide. Make jokes genuinely funny, relevant to hotels, and topical. These are for a B2B YouTube channel targeting hotel owners.
-2. Include image_placeholder components where a photo would enhance the presentation (hotel lobbies, guests, tech, etc.)
-3. Use real-looking data and numbers (realistic for the hotel industry). Be specific with costs in € (European market).
-4. Keep text concise — this is for visual presentations, not essays.
-5. Make the visualizations tell a compelling story that would generate B2B leads.
-6. Colors: use "teal" for AI/positive, "coral" for traditional/negative, "blue" for neutral data, "amber" for warnings/highlights, "purple" for special metrics.
+1. Match the topic and tone to what the user asked for — don't default to hotel or business content unless that's what they requested.
+2. Include script_lines with 1-2 talking points per slide to help the presenter know what to say.
+3. Add image_placeholder where a photo or screenshot would enhance the slide.
+4. Use realistic, specific data — invent plausible numbers that support the story being told.
+5. Keep text concise — this is for visual presentations, not essays.
+6. Colors: use "teal" for positive/new/after, "coral" for negative/old/before, "blue" for neutral data, "amber" for highlights, "purple" for special metrics.
 7. Return ONLY valid JSON, no markdown, no explanation. Just the JSON object.
 
 ## Output Format
@@ -94,7 +94,7 @@ export async function interpretWithClaude(prompt) {
   const anthropic = getClient();
 
   const message = await anthropic.messages.create({
-    model: "claude-sonnet-4-5-20250929",
+    model: "claude-sonnet-4-5",
     max_tokens: 4096,
     system: SYSTEM_PROMPT,
     messages: [
