@@ -1,0 +1,31 @@
+{
+  "name": "excalidraw-gen",
+  "version": "1.0.0",
+  "description": "CLI tool to generate Excalidraw diagrams from text prompts using the Claude API",
+  "type": "module",
+  "main": "index.js",
+  "bin": {
+    "excalidraw-gen": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "watch": "node index.js --watch"
+  },
+  "keywords": [
+    "excalidraw",
+    "diagram",
+    "cli",
+    "claude",
+    "anthropic",
+    "ai",
+    "visualization",
+    "b2b"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.74.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
